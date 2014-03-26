@@ -1,0 +1,58 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          pants
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     true
+# Short-Description: Puts on or takes off pants
+### END INIT INFO
+
+# See how we were called.
+case "$1" in
+  start)
+  echo -n "Putting on pants"
+  NUMPROC=`grep -c "^cpu[0-9]" /proc/stat`
+  if [ "$NUMPROC" -gt "1" ]; then
+    echo -n ", one leg at a time\n"
+  fi
+
+  # First check to see if we're still wearing an old pair
+  if [ -f /var/lock/pants ]; then
+    #action "" /bin/false
+    echo "Looks like we've still got some old pants on. They'll do."
+  else
+    # You'd better start wearing pants now.
+    #action "" /bin/true
+    touch /var/lock/pants
+  fi
+  ;;
+  stop)
+  # Hooray!
+  #action "Taking off pants" /bin/true
+  if [ -f /var/lock/pants ]; then
+    echo "Taking off pants"
+    rm -f /var/lock/pants
+  else
+    echo "You are not wearing any pants..."
+  fi
+  ;;
+  reload|restart)
+  echo "Time for a change of pants."
+  $0 stop
+  $0 start
+  ;;
+  status)
+  if [ -f /var/lock/pants ]; then
+    echo "Pants are ON ..."
+  else
+    echo "We're not wearing any pants ..."
+  fi
+  ;;
+  *)
+  echo "Usage: $0 {start|stop|restart|reload|status}"
+  exit 1
+esac
+
+exit 0
